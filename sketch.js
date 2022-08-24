@@ -10,10 +10,11 @@ var tower, canon, canonB, canvas;
 var angle;
 var balls = [];
 var boats = []
-
+var ground
 var json1,json2,spritesheet1,spritesheet2;
 var boatAnimation = []
 var brokenBoatAnimation = []
+var placar = 0
 
 function preload() {
   backgroundImg = loadImage("./assets/background.gif");
@@ -38,7 +39,10 @@ function setup() {
 
   tower = new Torre(150, 350, 160, 310)
   canon = new Canon(180, 120, 130, 100, angle)
- 
+  ground = Bodies.rectangle(600, 590, 1200, 5, {isStatic:true})
+  World.add(world, ground)
+
+
   var boatFrames=json1.frames;
 
   for(var i=0; i<boatFrames.length;i++){
@@ -67,13 +71,15 @@ function draw() {
   criarbarcos()
   
   for(var i=0; i<balls.length; i++) {
-    showCannonBalls(balls[i], i)
+    balls[i].display()
+    colidir(i)
+    
   }
+  textSize(25)
+  text("placar: "+ placar, width-200, y= 50)
 }
 
-function showCannonBalls(canonB, index) {
-  canonB.display()
-}
+
 
 
 function keyReleased() {
@@ -104,10 +110,46 @@ function criarbarcos() {
       Body.setVelocity(boats[i].body, {x:-1, y:0})
       boats[i].display();
       boats[i].animate();
+     
     }
+
 
   } else {
     var barco = new Boat(width, height-60, 170, 170, -60, boatAnimation)
     boats.push(barco)
   }
+}
+
+function  colidir(j) {
+
+  for(var i=0; i<boats.length; i++) {
+  if(boats[i] !== undefined && balls[j] !== undefined){
+  var colisao =Matter.SAT.collides(balls[j].body, boats[i].body)
+  
+  if(colisao.collided) {
+  World.remove(world, balls[j].body)
+//delete balls[j]
+balls.splice(j, 1);
+boats[i].remove(i)
+placar = placar +5
+  }
+}
+ }
+}
+
+function gameOver() {
+swal({
+  title: `Fim de Jogo!!!`,
+  text: "Obrigada por jogar!!",
+  imageUrl:
+    "https://raw.githubusercontent.com/whitehatjr/PiratesInvasion/main/assets/boat.png",
+  imageSize: "150x150",
+  confirmButtonText: "Jogar Novamente"
+},
+function(isConfirm) {
+  if (isConfirm) {
+    location.reload();
+  }
+})
+
 }
